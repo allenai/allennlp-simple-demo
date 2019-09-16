@@ -108,4 +108,42 @@ const Output = ({ result }) => {
 
 ## Other Demos
 
-To get a sense of what else is possible, the `reading-comprehension` demo constructs a highlighted paragraph, and the coreference resolution demo renders a complex nested tree of coreference classes. (The included toy models for both are terrible, though.)
+To get a sense of what else is possible, the `reading-comprehension` demo constructs a highlighted paragraph, and the coreference resolution demo renders a complex nested tree of coreference classes. (The tiny included toy models for all of these are terrible, though.)
+
+### Textual Entailment
+
+```bash
+$ python -m allennlp.service.server_simple \
+            --static-dir textual-entailment/ \
+            --archive-path textual-entailment/model.tar.gz \
+            --predictor textual-entailment
+```
+
+### Reading Comprehension
+
+```bash
+$ python -m allennlp.service.server_simple \
+            --static-dir reading-comprehension/ \
+            --archive-path reading-comprehension/model.tar.gz \
+            --predictor machine-comprehension
+```
+
+### Text Classification
+
+```bash
+python -m allennlp.service.server_simple \
+          --static-dir text-classification \
+          --archive-path text-classification/model.tar.gz \
+          --predictor text_classifier
+```
+
+### Coreference Resolution
+
+```bash
+python -m allennlp.service.server_simple \
+          --static-dir coref \
+          --archive-path coref/model.tar.gz \
+          --predictor coref
+```
+
+### Sequence Tagging

@@ -26,7 +26,9 @@ running on localhost:8000.
 
 ## Writing `demo.js`
 
-Of the three demos here, the textual-entailment is the simplest and indicative of how you'd write your `demo.js`. First, you have to update the title and description:
+Of the demos here, textual-entailment is the simplest,
+and is a good one to look at to see how you'd write your own `demo.js`.
+First, you have to update the title and description:
 
 ```js
 // TODO: 1. Update the title
@@ -55,10 +57,10 @@ The next step is to update the dropdown examples:
 // TODO: 4. Update the drop-down examples + exampleField + exampleMaxLength.
 //          If you don't want a drop-down, just make this list be empty.
 const examples = [
-   {premise: "An elephant is walking near a river.",
-    hypothesis: "The elephant is gray."},
+    {premise: "An elephant is walking near a river.",
+     hypothesis: "The elephant is gray."},
     {premise: "If you help the needy, God will reward you.",
-    hypothesis: "Giving to the poor has good consequences."},
+     hypothesis: "Giving to the poor has good consequences."},
 ]
 
 const exampleField = "premise"  // Which field to show in the dropdown?
@@ -108,7 +110,9 @@ const Output = ({ result }) => {
 
 ## Other Demos
 
-To get a sense of what else is possible, the `reading-comprehension` demo constructs a highlighted paragraph, and the coreference resolution demo renders a complex nested tree of coreference classes. (The tiny included toy models for all of these are terrible, though.)
+To get a sense of what else is possible, there are several other demos included.
+(The tiny included toy models for all of these are terrible, though,
+ and generally produce nonsensical results.)
 
 ### Textual Entailment
 

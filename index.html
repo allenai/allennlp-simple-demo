@@ -272,16 +272,13 @@ const Results = ({inputState, result, working}) => {
     if (working) {
         return <h1>working</h1>
     } else if (result) {
-        return output(inputState, result)
+        return <Output inputs={inputState} result={result}/>
     } else {
          return null
     }
 }
 
 /* Output widgets, more to come */
-
-const Output = styled.div`
-`
 
 const _OutputItem = ({label, children, className}) => (
     <div className={className}>
@@ -300,25 +297,6 @@ const OutputLabel = styled.label`
 `
 
 const OutputText = styled.div``
-
-const TokenSpan = styled.span`
-    background: ${props => props.highlighted ? "palevioletred" : "white"}
-    padding: 2px;
-`
-
-const HighlightedParagraph = ({tokens, highlight}) => {
-    const [start, end] = highlight
-
-    const paragraphToken = (token, idx) => {
-        const highlighted = start <= idx && idx <= end
-        return <TokenSpan highlighted={highlighted}>{token}</TokenSpan>
-    }
-
-    const paragraphTokens = tokens.map(paragraphToken)
-
-    return <div className="highlighted-paragraph">{paragraphTokens}</div>
-}
-
 
 ReactDOM.render(<App />, document.getElementById("app"))
 

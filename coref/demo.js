@@ -93,7 +93,7 @@ const Cluster = ({ clusterId, children }) => {
     )
 }
 
-const output = (inputs, result) => {
+const Output = ({ result }) => {
     // 5a. Destructure JSON result and (optionally) rename to camelCase.
     //     You'll need to change this to reflect the fields / structure of
     //     your model's response.
@@ -128,8 +128,8 @@ const output = (inputs, result) => {
 
     // 5b. And generate output based on the result.
     return (
-       <Output>
+       <div>
             {render(0, doc.length - 1, nestedClusters, [])}
-       </Output>
+       </div>
    )
 }

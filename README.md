@@ -1,10 +1,10 @@
 # AllenNLP Simple Demo
 
-AllenNLP has a [really nice demo](https://demo.allennlp.org), but to add models to it you have to use a lot of ReactJS.
+AllenNLP has a [really nice demo](https://demo.allennlp.org), but to add models to it you have to write a lot of ReactJS.
 AllenNLP also comes with a ["simple server"](https://allenai.github.io/allennlp-docs/api/allennlp.service.server_simple.html) that requires writing no code at all, but it's limited text-in-JSON-out.
 
 This is an attempt to bridge the gap. It contains an `index.html` that has all of the imports and plumbing,
-and requires you to write a minimal `demo.js` with the specifics of your demo.
+and requires you to write a minimal `demo.js` with just the specifics of your demo.
 
 ## Running the Simple Demo
 
@@ -13,8 +13,8 @@ If you have both files in the same directory
 
 ```bash
 $ python -m allennlp.service.server_simple \
-            --static-dir simple-demo/textual-entailment/ \
-            --archive-path simple-demo/textual-entailment/model.tar.gz \
+            --static-dir textual-entailment/ \
+            --archive-path textual-entailment/model.tar.gz \
             --predictor textual-entailment
 ```
 
@@ -37,7 +37,7 @@ const description = "This is a junky model for textual entailment.."
 ```
 
 Next, you need to update the input fields. The textual entailment demo needs only two text fields,
-but there are other fields defined, you can look at the reading comprehension demo to see them.
+but there are other types of fields defined in `index.html`, you can look at the reading comprehension demo to see them.
 
 ```js
 // TODO: 3. Update the inputs. The "name" will be the key in the JSON
@@ -66,18 +66,26 @@ const exampleField = "premise"  // Which field to show in the dropdown?
 const exampleMaxLength = 50     // How many characters of it to show?
 ```
 
-So far everything is straightforward. The last step is less straightforward, and that's
-to write the function that actually generates your output:
+So far this should be pretty straightforward. The last step is less straightforward, and that's
+to write the React component that actually generates your output. Even if you don't know React,
+you can probably manage to modify what we did here.
+
+The trickiest part is that `result` is whatever's returned by your Model / Predictor,
+so it's your responsibility to know what data it contains.
+
+Here the result contains many things, but we'll just render a table containing the label probabilities:
 
 ```js
 // TODO: 5. Update the output
 const LABELS = ["Entailment", "Neutral", "Contradiction"]
 
-const output = (inputs, result) => {
-    // Get the label probabilities out of the result.
+const Output = ({ result }) => {
+    // 5a. Destructure JSON result and (optionally) rename to camelCase.
+    //     You'll need to change this to reflect the fields / structure of
+    //     your model's response.
+
     const { label_probs: labelProbs } = result
 
-    // Generate HTML rows for a table [label, probability]
     const predictionRows = labelProbs.map((probability, idx) => (
         <tr>
             <td>{LABELS[idx]}</td>
@@ -85,17 +93,15 @@ const output = (inputs, result) => {
         </tr>
    ))
 
-    // And generate output based on the result.
+    // 5b. And generate output based on the result.
     return (
-        <Output>
-            <table>
-                <tr>
-                    <th>Label</th>
-                    <th>Probability</th>
-                </tr>
-                {predictionRows}
-            </table>
-        </Output>
+        <table>
+            <tr>
+                <th>Label</th>
+                <th>Probability</th>
+            </tr>
+            {predictionRows}
+        </table>
     )
 }
 ```

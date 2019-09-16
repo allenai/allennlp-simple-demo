@@ -39,7 +39,25 @@ const exampleMaxLength = 50     // How many characters of it to show?
 
 
 // TODO: 5. Update the output
-const output = (inputs, result) => {
+const TokenSpan = styled.span`
+    background: ${props => props.highlighted ? "palevioletred" : "white"}
+    padding: 2px;
+`
+
+const HighlightedParagraph = ({tokens, highlight}) => {
+    const [start, end] = highlight
+
+    const paragraphToken = (token, idx) => {
+        const highlighted = start <= idx && idx <= end
+        return <TokenSpan highlighted={highlighted}>{token}</TokenSpan>
+    }
+
+    const paragraphTokens = tokens.map(paragraphToken)
+
+    return <div className="highlighted-paragraph">{paragraphTokens}</div>
+}
+
+const Output = ({ result }) => {
    // 5a. Destructure JSON result and (optionally) rename to camelCase.
    //     You'll need to change this to reflect the fields / structure of
    //     your model's response.
@@ -53,7 +71,7 @@ const output = (inputs, result) => {
 
    // 5b. And generate output based on the result.
    return (
-       <Output>
+       <div>
            <OutputItem label="Best Span:">
                <OutputText>{bestSpanStr}</OutputText>
             </OutputItem>
@@ -61,6 +79,6 @@ const output = (inputs, result) => {
             <OutputItem label="Location in Passage:">
                 <HighlightedParagraph tokens={passageTokens} highlight={bestSpan}/>
             </OutputItem>
-       </Output>
+       </div>
    )
 }

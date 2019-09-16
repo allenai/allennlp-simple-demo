@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>AllenNLP Simple Demo</title>
+        <link rel="stylesheet" href="https://unpkg.com/antd/dist/antd.css" />
+        <link rel=“stylesheet” href="https://cdn.jsdelivr.net/npm/@allenai/varnish@0.4.4/theme.css" />
+        <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Raleway" />
+        <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato" />
+    </head>
+
+    <body>
+        <div id="app"></div>
+
+        <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/styled-components/4.3.2/styled-components.min.js"></script>
+        <script src="https://unpkg.com/moment/min/moment-with-locales.js"></script>
+        <script src="https://unpkg.com/antd/dist/antd-with-locales.js"></script>
+
+        <!-- point this at your script -->
+        <script type="text/babel" src="demo.js"></script>
+
+<!-- This next script you shouldn't need to touch. -->
+
+        <script type="text/babel">
+
+// Where should we make AJAX calls to get predictions.
+const endpoint = "/predict"
+
+// The initial values for all the inputs are their defaultValues (if specified)
+// or just an empty string otherwise.
+const initialValues = inputFields.map(({name, defaultValue}) => [name, defaultValue === undefined ? "" : defaultValue])
+
+// Styled component to wrap the entire demo.
+const Demo = styled.div`
+    padding: 5px;
+    font-family: Lato, Helvetica Neue, Helvetica, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+`
+
+const App = (props) => {
+    // State corresponding to the input values. Will be used as-is for the payload
+    // in the calls to the predictor.
+    const [inputState, setInputState] = React.useState(Object.fromEntries(initialValues))
+
+    // State corresponding to the response from the predictor.
+    const [result, setResult] = React.useState(null)
+
+    // State indicating whether the model is currently working.
+    const [working, setWorking] = React.useState(false)
+
+    return (
+        <Demo>
+            <Title title={title}/>
+            <Description description={description}/>
+            <Examples examples={examples} exampleField={exampleField} exampleMaxLength={exampleMaxLength} inputState={inputState} setInputState={setInputState}/>
+            <Inputs inputFields={inputFields} inputState={inputState} setInputState={setInputState} setResult={setResult} setWorking={setWorking}/>
+            <Results working={working} inputState={inputState} result={result}/>
+        </Demo>
+    )
+}
+
+// Component for the Title of the demo.
+const _Title = ({title, className}) => <h1 className={className}>{title}</h1>
+const Title = styled(_Title)`
+    background-color: lightgrey;
+    padding: 5px;
+    font-weight: 700;
+    font-family: Raleway, Helvetica Neue, Helvetica, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+`
+
+// Component for the description of your model.
+const _Description = ({description, className}) => <p className={className}>{description}</p>
+const Description = styled(_Description)`
+    padding: 5px;
+`
+
+// Components for the dropdown select box of examples.
+const Select = styled(antd.Select)`
+    width: 100%;
+`
+
+const Option = styled(antd.Select.Option)``
+
+const Examples = ({examples, exampleField, exampleMaxLength, inputState, setInputState}) => {
+    const [selected, setSelected] = React.useState(-1)
+
+    const makeOption = (example, idx) => {
+        let displayName = example[exampleField]
+        if (displayName.length > exampleMaxLength) {
+            displayName = displayName.slice(0, exampleMaxLength) + "..."
+        }
+
+        return <Option value={idx} selected={idx === selected}>{displayName}</Option>
+    }
+
+    const onChange = idx => {
+        const newState = {...inputState, ...examples[idx]}
+        setInputState(newState)
+        setSelected(idx)
+    }
+
+    const Placeholder = styled.span`
+        margin-left: 10px;
+        margin-right: 10px;
+    `
+
+    // If no examples, then don't render anything.
+    return examples.length ? (
+        <SingleInput label="Enter text or choose an example">
+            <Select placeholder={<Placeholder>Choose an example</Placeholder>} onChange={onChange}>
+                {examples.map(makeOption)}
+            </Select>
+        </SingleInput>
+    ) : null
+}
+
+// Generic wrapper for a labeled input control
+const Label = styled.label`
+    margin-right: 10px;
+    font-weight: bold;
+`
+
+const UnstyledSingleInput = ({label, children, className}) => {
+    // Don't render <Label> if no label specified
+    const maybeLabel = label ? <Label>{label}</Label> : null
+
+    return (
+        <div className={className}>
+            {maybeLabel}
+            {children}
+        </div>
+    )
+}
+
+const SingleInput = styled(UnstyledSingleInput)`
+    margin-top: 5px;
+    padding-top: 5px;
+`
+
+// TextArea input
+const TextArea = styled(antd.Input.TextArea)``
+
+const TextAreaInput = ({ label, value, updateValue }) => {
+    return (
+        <SingleInput label={label}>
+            <TextArea rows={4} value={value} onChange={e => updateValue(e.target.value)}/>
+        </SingleInput>
+    )
+}
+
+// TextInput
+const Input = styled(antd.Input)``
+
+const TextInput = ({ label, value, updateValue }) => {
+    return (
+        <SingleInput label={label}>
+            <Input value={value} onChange={e => updateValue(e.target.value)}/>
+        </SingleInput>
+    )
+}
+
+// Radio Input
+const RadioGroup = styled(antd.Radio.Group)``
+const Radio = styled(antd.Radio)``
+
+const RadioButton = ({ label, value, updateValue, choices, choiceLabels }) => {
+    const buttons = choices.map((buttonValue, idx) => {
+        const label = choiceLabels[idx]
+
+        return (
+            <label>
+                <Radio value={buttonValue}
+                       onChange={evt => updateValue(evt.target.value)}>
+                    {label}
+                </Radio>
+            </label>
+        )
+    })
+
+    return (
+        <SingleInput label={label}>
+            <RadioGroup value={value}>
+                {buttons}
+            </RadioGroup>
+        </SingleInput>
+    )
+}
+
+// Checkbox input
+const Checkbox = styled(antd.Checkbox)``
+
+const CheckboxInput = ({label, value, updateValue}) => {
+    return (
+        <SingleInput label={label}>
+            <Checkbox checked={value} onChange={e => updateValue(e.target.checked)}/>
+        </SingleInput>
+    )
+}
+
+// Button
+const Button = styled(antd.Button)`
+    padding: 5px;
+`
+
+// Component to handle all the inputs.
+const _Inputs = ({inputFields, inputState, setInputState, setResult, setWorking, className}) => {
+    const inputs = inputFields.map(field => {
+        const {name, label, type} = field
+        const value = inputState[name]
+
+        const updateValue = (newValue) => {
+            const newState = {...inputState}
+            newState[name] = newValue
+            setInputState(newState)
+        }
+
+        switch (type) {
+            case "text":
+                return <TextInput label={label} value={value} updateValue={updateValue}/>
+
+            case "textarea":
+                return <TextAreaInput label={label} value={value} updateValue={updateValue}/>
+
+            case "radio":
+                const { choices, choiceLabels } = field
+                return <RadioButton label={label} value={value} updateValue={updateValue} choices={choices} choiceLabels={choiceLabels}/>
+
+            case "checkbox":
+                return <CheckboxInput label={label} value={value} updateValue={updateValue}/>
+
+            default:
+                return null
+        }
+
+    })
+
+    const query = () => {
+        setWorking(true)
+        fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(inputState)
+        })
+        .then(response => response.json())
+        .then(data => {
+            setResult(data)
+            setWorking(false)
+        })
+    }
+
+    return (
+        <div className={className}>
+            {inputs}
+            <SingleInput>
+                <Button type="primary" onClick={query}>submit</Button>
+            </SingleInput>
+        </div>
+    )
+}
+
+const Inputs = styled(_Inputs)`
+    padding-bottom: 5px;
+    border-bottom: 2px solid gray;
+`
+
+// Component for rendering results (if they exist and if we're not working)
+const Results = ({inputState, result, working}) => {
+    if (working) {
+        return <h1>working</h1>
+    } else if (result) {
+        return output(inputState, result)
+    } else {
+         return null
+    }
+}
+
+/* Output widgets, more to come */
+
+const Output = styled.div`
+`
+
+const _OutputItem = ({label, children, className}) => (
+    <div className={className}>
+        <OutputLabel>{label}</OutputLabel>
+        {children}
+    </div>
+)
+
+const OutputItem = styled(_OutputItem)`
+    padding-top: 5px;
+    margin-top: 5px;
+`
+
+const OutputLabel = styled.label`
+    font-weight: bold;
+`
+
+const OutputText = styled.div``
+
+const TokenSpan = styled.span`
+    background: ${props => props.highlighted ? "palevioletred" : "white"}
+    padding: 2px;
+`
+
+const HighlightedParagraph = ({tokens, highlight}) => {
+    const [start, end] = highlight
+
+    const paragraphToken = (token, idx) => {
+        const highlighted = start <= idx && idx <= end
+        return <TokenSpan highlighted={highlighted}>{token}</TokenSpan>
+    }
+
+    const paragraphTokens = tokens.map(paragraphToken)
+
+    return <div className="highlighted-paragraph">{paragraphTokens}</div>
+}
+
+
+ReactDOM.render(<App />, document.getElementById("app"))
+
+        </script>
+    </body>
+</html>

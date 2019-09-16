@@ -147,3 +147,10 @@ python -m allennlp.service.server_simple \
 ```
 
 ### Sequence Tagging
+
+```bash
+python -m allennlp.service.server_simple \
+          --static-dir sequence-tagging \
+          --archive-path sequence-tagging/model.tar.gz \
+          --predictor sentence-tagger
+```

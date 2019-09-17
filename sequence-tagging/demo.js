@@ -46,8 +46,8 @@ const NerTag = styled.span`
 
 const _TaggedWord = ({ tag, children, className }) => (
     <span className={className}>
-        <NerTag tag={tag}>{tag}</NerTag>
         <PaddedWord>{children}</PaddedWord>
+        <NerTag tag={tag}>{tag}</NerTag>
     </span>
 )
 
@@ -56,24 +56,25 @@ const TaggedWord = styled(_TaggedWord)`
     margin: 5px;
 `
 
-const Word = ({ tag, children }) => {
-    if (tag === "O") {
-        return <UntaggedWord>{children}</UntaggedWord>
-    } else {
-        return <TaggedWord tag={tag}>{children}</TaggedWord>
-    }
-}
-
 const Output = ({ result }) => {
     // 5a. Destructure JSON result and (optionally) rename to camelCase.
     //     You'll need to change this to reflect the fields / structure of
     //     your model's response.
     const { words, tags } = result
 
+    const renderedWords = words.map((word, idx) => {
+        const tag = tags[idx]
+        if (!tag || tag === "O") {
+            return <UntaggedWord>{word}</UntaggedWord>
+        } else {
+            return <TaggedWord tag={tag}>{word}</TaggedWord>
+        }
+    })
+
     // 5b. And generate output based on the result.
     return (
         <div>
-            {words.map((word, idx) => <Word tag={tags[idx]}>{word}</Word>)}
+            {renderedWords}
         </div>
     )
 }
